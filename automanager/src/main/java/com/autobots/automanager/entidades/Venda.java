@@ -33,6 +33,9 @@ public class Venda {
     private Usuario usuario;
 
     @ManyToOne
+    private Usuario criadoPor;
+
+    @ManyToOne
     private Veiculo veiculo;
 
     @Column(nullable = false)

@@ -49,14 +49,27 @@ public class VendaServicos {
     }
 
     @Transactional(readOnly = true)
+    public List<VendaRespostaDTO> listarDoUsuario(String login) {
+        return vendas.findByUsuario_Credencial_Login(login).stream()
+                .map(this::paraResposta).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<VendaRespostaDTO> listarCriadasPor(String login) {
+        return vendas.findByCriadoPor_Credencial_Login(login).stream()
+                .map(this::paraResposta).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public VendaRespostaDTO buscar(Long id) {
         return paraResposta(obterVenda(id));
     }
 
-    public VendaRespostaDTO salvar(Long id, VendaDTO dto) {
+    public VendaRespostaDTO salvar(Long id, VendaDTO dto, Long criadoPorId) {
         Venda venda = id == null ? new Venda() : obterVenda(id);
 
-        if (id != null) restaurarEstoque(venda);
+        if (id != null)
+            restaurarEstoque(venda);
 
         Empresa empresa = empresas.findById(dto.getEmpresaId())
                 .orElseThrow(() -> new EntityNotFoundException("Empresa não encontrada: " + dto.getEmpresaId()));
@@ -72,6 +85,9 @@ public class VendaServicos {
         }
         venda.setEmpresa(empresa);
         venda.setUsuario(usuario);
+        Usuario criador = usuarios.findById(criadoPorId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário autenticado não encontrado: " + criadoPorId));
+        venda.setCriadoPor(criador);
         venda.setVeiculo(veiculo);
         venda.getItens().clear();
 

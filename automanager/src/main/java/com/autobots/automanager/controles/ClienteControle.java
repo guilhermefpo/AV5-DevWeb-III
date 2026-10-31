@@ -7,6 +7,8 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +24,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import com.autobots.automanager.dtos.ClienteDTO;
 import com.autobots.automanager.dtos.ClienteRespostaDTO;
 import com.autobots.automanager.servicos.ClienteServicos;
+import com.autobots.automanager.seguranca.AcessoUsuario;
 
 @RestController
 @RequestMapping("/cliente")
@@ -30,17 +33,24 @@ public class ClienteControle {
 
 	@Autowired
 	private ClienteServicos servicos;
+	@Autowired
+	private AcessoUsuario acessoUsuario;
 
 	@GetMapping("/{id}")
+	@PreAuthorize("@acessoUsuario.podeLerCliente(#id)")
 	@ResponseStatus(HttpStatus.OK)
-	public ClienteRespostaDTO obterCliente(@PathVariable("id") long id) {
+	public ClienteRespostaDTO obterCliente(@PathVariable("id") @P("id") long id) {
 		return links(servicos.buscarPorId(id));
 	}
 
 	@GetMapping
+	@PreAuthorize("hasAnyRole('ADMINISTRADOR','GERENTE','VENDEDOR','CLIENTE')")
 	@ResponseStatus(HttpStatus.OK)
 	public List<ClienteRespostaDTO> obterClientes() {
-		return servicos.buscarClientes().stream().map(this::links).toList();
+		List<ClienteRespostaDTO> clientes = acessoUsuario.ehCliente()
+				? servicos.buscarClientesPorCpf(acessoUsuario.documentoAtual())
+				: servicos.buscarClientes();
+		return clientes.stream().map(this::links).toList();
 	}
 
 	@PostMapping

@@ -35,6 +35,13 @@ public class ClienteServicos {
                 .collect(Collectors.toList());
     }
 
+    public List<ClienteRespostaDTO> buscarClientesPorCpf(String cpf) {
+        if (cpf == null || cpf.isBlank()) return List.of();
+        return repositorio.findByCpf(cpf).stream()
+                .map(cliente -> modelMapper.map(cliente, ClienteRespostaDTO.class))
+                .collect(Collectors.toList());
+    }
+
     public ClienteRespostaDTO buscarPorId(Long id) {
         Cliente cliente = repositorio.findById(id)
                 .orElseThrow(() -> new ClienteNaoEncontradoException(id));

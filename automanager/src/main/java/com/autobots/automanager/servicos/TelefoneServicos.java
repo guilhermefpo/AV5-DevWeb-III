@@ -51,7 +51,7 @@ public class TelefoneServicos {
 
                 return modelMapper.map(
                                 telefone,
-                                TelefoneRespostaDTO.class); // Bolsonaro Hipotético
+                                TelefoneRespostaDTO.class); // Carry on Wayward Son - Neoni
         }
 
         public TelefoneRespostaDTO atualizarTelefone(
