@@ -17,41 +17,38 @@ import com.autobots.automanager.dtos.OrdemServicoRespostaDTO;
 import com.autobots.automanager.servicos.OrdemServicoServicos;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/ordem-servico")
 public class OrdemServicoControle {
-    private final OrdemServicoServicos servicos;
-
-    public OrdemServicoControle(OrdemServicoServicos servicos) {
-        this.servicos = servicos;
-    }
+    @Autowired private OrdemServicoServicos ordemServicoServicos;
 
     @GetMapping
     public List<OrdemServicoRespostaDTO> listar() {
-        return servicos.listar().stream().map(this::links).toList();
+        return ordemServicoServicos.listar().stream().map(this::links).toList();
     }
 
     @GetMapping("/{id}")
     public OrdemServicoRespostaDTO buscar(@PathVariable Long id) {
-        return links(servicos.buscar(id));
+        return links(ordemServicoServicos.buscar(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public OrdemServicoRespostaDTO cadastrar(@Valid @RequestBody OrdemServicoDTO dto) {
-        return links(servicos.salvar(null, dto));
+        return links(ordemServicoServicos.salvar(null, dto));
     }
 
     @PutMapping("/{id}")
     public OrdemServicoRespostaDTO atualizar(@PathVariable Long id, @Valid @RequestBody OrdemServicoDTO dto) {
-        return links(servicos.salvar(id, dto));
+        return links(ordemServicoServicos.salvar(id, dto));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void excluir(@PathVariable Long id) {
-        servicos.excluir(id);
+        ordemServicoServicos.excluir(id);
     }
 
     private OrdemServicoRespostaDTO links(OrdemServicoRespostaDTO dto) {

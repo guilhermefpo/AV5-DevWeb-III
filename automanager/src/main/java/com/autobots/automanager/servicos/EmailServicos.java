@@ -6,6 +6,7 @@ import org.modelmapper.ModelMapper;
 import javax.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import com.autobots.automanager.entidades.Email;
 import com.autobots.automanager.repositorios.EmailRepositorio;
 import com.autobots.automanager.dtos.EmailDTO;
@@ -13,37 +14,32 @@ import com.autobots.automanager.dtos.EmailRespostaDTO;
 
 @Service
 public class EmailServicos {
-    private final EmailRepositorio repositorio;
-    private final ModelMapper mapper;
-
-    public EmailServicos(EmailRepositorio repositorio, ModelMapper mapper) {
-        this.repositorio = repositorio;
-        this.mapper = mapper;
-    }
+    @Autowired private EmailRepositorio emailRepositorio;
+    @Autowired private ModelMapper modelMapper;
 
     public List<EmailRespostaDTO> listar() {
-        return repositorio.findAll().stream().map(e -> mapper.map(e, EmailRespostaDTO.class)).collect(Collectors.toList());
+        return emailRepositorio.findAll().stream().map(e -> modelMapper.map(e, EmailRespostaDTO.class)).collect(Collectors.toList());
     }
 
     public EmailRespostaDTO buscar(Long id) {
-        return mapper.map(repositorio.findById(id)
+        return modelMapper.map(emailRepositorio.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("E-mail não encontrado: " + id)), EmailRespostaDTO.class);
     }
 
     public EmailRespostaDTO salvar(Long id, EmailDTO dto) {
-        Email email = id == null ? new Email() : repositorio.findById(id)
+        Email email = id == null ? new Email() : emailRepositorio.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("E-mail não encontrado: " + id));
-        mapper.map(dto, email);
+        modelMapper.map(dto, email);
         if (email.getEndereco() != null && (email.getId() == null
-                ? repositorio.existsByEndereco(email.getEndereco())
-                : repositorio.existsByEnderecoAndIdNot(email.getEndereco(), email.getId()))) {
+                ? emailRepositorio.existsByEndereco(email.getEndereco())
+                : emailRepositorio.existsByEnderecoAndIdNot(email.getEndereco(), email.getId()))) {
             throw new DataIntegrityViolationException("E-mail já cadastrado.");
         }
-        return mapper.map(repositorio.save(email), EmailRespostaDTO.class);
+        return modelMapper.map(emailRepositorio.save(email), EmailRespostaDTO.class);
     }
 
     public void excluir(Long id) {
-        repositorio.delete(repositorio.findById(id)
+        emailRepositorio.delete(emailRepositorio.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("E-mail não encontrado: " + id)));
     }
 }

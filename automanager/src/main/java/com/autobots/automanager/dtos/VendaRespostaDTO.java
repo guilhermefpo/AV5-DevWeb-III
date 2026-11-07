@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Data;
 import org.springframework.hateoas.RepresentationModel;
+import com.autobots.automanager.enumeracao.StatusOrdemServico;
 
 @Data
 public class VendaRespostaDTO extends RepresentationModel<VendaRespostaDTO> {
@@ -15,4 +16,9 @@ public class VendaRespostaDTO extends RepresentationModel<VendaRespostaDTO> {
     private LocalDateTime dataCriacao;
     private BigDecimal total;
     private List<ItemVendaRespostaDTO> itens;
+    private String tipo;
+    private Long servicoId;
+    private String servicoNome;
+    private String observacao;
+    private StatusOrdemServico status;
 }

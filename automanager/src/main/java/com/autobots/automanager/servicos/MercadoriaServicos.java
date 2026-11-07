@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import com.autobots.automanager.entidades.Mercadoria;
 import com.autobots.automanager.repositorios.MercadoriaRepositorio;
 import javax.persistence.EntityNotFoundException;
@@ -14,39 +15,33 @@ import com.autobots.automanager.dtos.MercadoriaRespostaDTO;
 
 @Service
 public class MercadoriaServicos {
-    private final MercadoriaRepositorio r;
-    private final EmpresaRepositorio empresas;
-    private final ModelMapper mapper;
-
-    public MercadoriaServicos(MercadoriaRepositorio r, EmpresaRepositorio empresas, ModelMapper mapper) {
-        this.r = r;
-        this.empresas = empresas;
-        this.mapper = mapper;
-    }
+    @Autowired private MercadoriaRepositorio mercadoriaRepositorio;
+    @Autowired private EmpresaRepositorio empresaRepositorio;
+    @Autowired private ModelMapper modelMapper;
 
     public List<MercadoriaRespostaDTO> listar() {
-        return r.findAll().stream().map(e -> mapper.map(e, MercadoriaRespostaDTO.class)).collect(Collectors.toList());
+        return mercadoriaRepositorio.findAll().stream().map(e -> modelMapper.map(e, MercadoriaRespostaDTO.class)).collect(Collectors.toList());
     }
 
     public MercadoriaRespostaDTO buscar(Long id) {
-        return mapper.map(r.findById(id).orElseThrow(() -> new EntityNotFoundException("Mercadoria não encontrada: " + id)), MercadoriaRespostaDTO.class);
+        return modelMapper.map(mercadoriaRepositorio.findById(id).orElseThrow(() -> new EntityNotFoundException("Mercadoria não encontrada: " + id)), MercadoriaRespostaDTO.class);
     }
 
     public MercadoriaRespostaDTO salvar(Long id, MercadoriaDTO dto, Long empresaId) {
-        Mercadoria e = id == null ? new Mercadoria() : r.findById(id)
+        Mercadoria e = id == null ? new Mercadoria() : mercadoriaRepositorio.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Mercadoria não encontrada: " + id));
-        mapper.map(dto, e);
+        modelMapper.map(dto, e);
         if (empresaId != null) {
-            Empresa empresa = empresas.findById(empresaId)
+            Empresa empresa = empresaRepositorio.findById(empresaId)
                     .orElseThrow(() -> new EntityNotFoundException("Empresa não encontrada: " + empresaId));
             e.setEmpresa(empresa);
         } else if (id == null) {
             throw new IllegalArgumentException("Informe empresaId para associar a mercadoria.");
         }
-        return mapper.map(r.save(e), MercadoriaRespostaDTO.class);
+        return modelMapper.map(mercadoriaRepositorio.save(e), MercadoriaRespostaDTO.class);
     }
 
     public void excluir(Long id) {
-        r.delete(r.findById(id).orElseThrow(() -> new EntityNotFoundException("Mercadoria não encontrada: " + id)));
+        mercadoriaRepositorio.delete(mercadoriaRepositorio.findById(id).orElseThrow(() -> new EntityNotFoundException("Mercadoria não encontrada: " + id)));
     }
 }

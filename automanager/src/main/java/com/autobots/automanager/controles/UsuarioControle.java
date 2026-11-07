@@ -10,26 +10,23 @@ import com.autobots.automanager.dtos.UsuarioDTO;
 import com.autobots.automanager.dtos.UsuarioRespostaDTO;
 import com.autobots.automanager.servicos.UsuarioServicos;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/usuario")
 public class UsuarioControle {
-    private final UsuarioServicos s;
-
-    public UsuarioControle(UsuarioServicos s) {
-        this.s = s;
-    }
+    @Autowired private UsuarioServicos usuarioServicos;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','GERENTE','VENDEDOR','CLIENTE')")
     public List<UsuarioRespostaDTO> listar() {
-        return s.listar().stream().map(this::links).toList();
+        return usuarioServicos.listar().stream().map(this::links).toList();
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("@acessoUsuario.podeLerUsuario(#id)")
     public UsuarioRespostaDTO buscar(@PathVariable @P("id") Long id) {
-        return links(s.buscar(id));
+        return links(usuarioServicos.buscar(id));
     }
 
     @PostMapping
@@ -37,21 +34,21 @@ public class UsuarioControle {
     @ResponseStatus(HttpStatus.CREATED)
     public UsuarioRespostaDTO cadastrar(@Valid @RequestBody @P("dto") UsuarioDTO e,
             @RequestParam(required = false) Long empresaId) {
-        return links(s.salvar(null, e, empresaId));
+        return links(usuarioServicos.salvar(null, e, empresaId));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("@acessoUsuario.podeAlterarUsuario(#id, #dto.perfil)")
     public UsuarioRespostaDTO atualizar(@PathVariable @P("id") Long id, @Valid @RequestBody @P("dto") UsuarioDTO e,
             @RequestParam(required = false) Long empresaId) {
-        return links(s.salvar(id, e, empresaId));
+        return links(usuarioServicos.salvar(id, e, empresaId));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("@acessoUsuario.podeExcluirUsuario(#id)")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void excluir(@PathVariable @P("id") Long id) {
-        s.excluir(id);
+        usuarioServicos.excluir(id);
     }
 
     private UsuarioRespostaDTO links(UsuarioRespostaDTO e) {

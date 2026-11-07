@@ -34,6 +34,8 @@ public class SecurityConfigurations {
 
         httpSecurity.authorizeHttpRequests()
                 .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/empresas/**"))
+                .hasAnyRole("ADMINISTRADOR", "GERENTE", "VENDEDOR")
                 .requestMatchers(
                         new AntPathRequestMatcher("/servico/**", "GET"),
                         new AntPathRequestMatcher("/mercadoria/**", "GET"))

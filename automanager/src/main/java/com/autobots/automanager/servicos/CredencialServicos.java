@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import com.autobots.automanager.entidades.Credencial;
 import com.autobots.automanager.repositorios.CredencialRepositorio;
 import javax.persistence.EntityNotFoundException;
@@ -13,34 +14,29 @@ import com.autobots.automanager.dtos.CredencialRespostaDTO;
 
 @Service
 public class CredencialServicos {
-    private final CredencialRepositorio r;
-    private final ModelMapper mapper;
-
-    public CredencialServicos(CredencialRepositorio r, ModelMapper mapper) {
-        this.r = r;
-        this.mapper = mapper;
-    }
+    @Autowired private CredencialRepositorio credencialRepositorio;
+    @Autowired private ModelMapper modelMapper;
 
     public List<CredencialRespostaDTO> listar() {
-        return r.findAll().stream().map(e -> mapper.map(e, CredencialRespostaDTO.class)).collect(Collectors.toList());
+        return credencialRepositorio.findAll().stream().map(e -> modelMapper.map(e, CredencialRespostaDTO.class)).collect(Collectors.toList());
     }
 
     public CredencialRespostaDTO buscar(Long id) {
-        return mapper.map(r.findById(id).orElseThrow(() -> new EntityNotFoundException("Credencial não encontrada: " + id)), CredencialRespostaDTO.class);
+        return modelMapper.map(credencialRepositorio.findById(id).orElseThrow(() -> new EntityNotFoundException("Credencial não encontrada: " + id)), CredencialRespostaDTO.class);
     }
 
     public CredencialRespostaDTO salvar(Long id, CredencialDTO dto) {
-        Credencial e = id == null ? new Credencial() : r.findById(id)
+        Credencial e = id == null ? new Credencial() : credencialRepositorio.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Credencial não encontrada: " + id));
-        mapper.map(dto, e);
-        if (e.getLogin() != null && (e.getId() == null ? r.existsByLogin(e.getLogin())
-                : r.existsByLoginAndIdNot(e.getLogin(), e.getId()))) {
+        modelMapper.map(dto, e);
+        if (e.getLogin() != null && (e.getId() == null ? credencialRepositorio.existsByLogin(e.getLogin())
+                : credencialRepositorio.existsByLoginAndIdNot(e.getLogin(), e.getId()))) {
             throw new DataIntegrityViolationException("Login já cadastrado.");
         }
-        return mapper.map(r.save(e), CredencialRespostaDTO.class);
+        return modelMapper.map(credencialRepositorio.save(e), CredencialRespostaDTO.class);
     }
 
     public void excluir(Long id) {
-        r.delete(r.findById(id).orElseThrow(() -> new EntityNotFoundException("Credencial não encontrada: " + id)));
+        credencialRepositorio.delete(credencialRepositorio.findById(id).orElseThrow(() -> new EntityNotFoundException("Credencial não encontrada: " + id)));
     }
 }

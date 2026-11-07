@@ -28,38 +28,38 @@ import com.autobots.automanager.servicos.DocumentoServicos;
 @Validated
 public class DocumentoControle {
     @Autowired
-    private DocumentoServicos servicos;
+    private DocumentoServicos documentoServicos;
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public DocumentoRespostaDTO buscarDocumento(@PathVariable("id") long id) {
-        return links(servicos.buscarPorId(id));
+        return links(documentoServicos.buscarPorId(id));
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<DocumentoRespostaDTO> obterDocumentos() {
-        return servicos.buscarDocumentos().stream().map(this::links).toList();
+        return documentoServicos.buscarDocumentos().stream().map(this::links).toList();
     }
 
     @PostMapping("/{id}")
     @ResponseStatus(HttpStatus.CREATED)
     public DocumentoRespostaDTO cadastrarDocumento(@Valid @RequestBody DocumentoDTO documentoDTO,
             @PathVariable("id") long id) {
-        return links(servicos.cadastrarDocumento(documentoDTO, id));
+        return links(documentoServicos.cadastrarDocumento(documentoDTO, id));
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public DocumentoRespostaDTO atualizarDocumento(@PathVariable("id") long id, @RequestBody DocumentoDTO novosDados) {
-        return links(servicos.atualizarDocumento(id, novosDados));
+        return links(documentoServicos.atualizarDocumento(id, novosDados));
     }
 
     @SuppressWarnings("null")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void excluirDocumento(@PathVariable("id") long id) {
-        servicos.excluirDocumento(id);
+        documentoServicos.excluirDocumento(id);
     }
 
     private DocumentoRespostaDTO links(DocumentoRespostaDTO documento) {

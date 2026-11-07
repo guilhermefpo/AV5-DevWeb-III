@@ -8,6 +8,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.autobots.automanager.entidades.Usuario;
 import com.autobots.automanager.enumeracao.PerfilUsuario;
@@ -17,20 +18,14 @@ import com.autobots.automanager.repositorios.VendaRepositorio;
 
 @Component("acessoUsuario")
 public class AcessoUsuario {
-    private final UsuarioRepositorio usuarios;
-    private final VendaRepositorio vendas;
-    private final ClienteRepositorio clientes;
-
-    public AcessoUsuario(UsuarioRepositorio usuarios, VendaRepositorio vendas, ClienteRepositorio clientes) {
-        this.usuarios = usuarios;
-        this.vendas = vendas;
-        this.clientes = clientes;
-    }
+    @Autowired private UsuarioRepositorio usuarioRepositorio;
+    @Autowired private VendaRepositorio vendaRepositorio;
+    @Autowired private ClienteRepositorio clienteRepositorio;
 
     public boolean podeLerUsuario(Long id) {
         if (!autenticado() || id == null) return false;
         if (temPerfil(PerfilUsuario.ADMINISTRADOR)) return true;
-        return usuarios.findById(id).map(usuario ->
+        return usuarioRepositorio.findById(id).map(usuario ->
                 perfisPermitidos().contains(usuario.getPerfil()) || eUsuarioAtual(id)).orElse(false);
     }
 
@@ -42,7 +37,7 @@ public class AcessoUsuario {
     public boolean podeAlterarUsuario(Long id, PerfilUsuario novoPerfil) {
         if (!autenticado() || id == null || novoPerfil == null) return false;
         if (temPerfil(PerfilUsuario.ADMINISTRADOR)) return true;
-        return usuarios.findById(id).map(usuario ->
+        return usuarioRepositorio.findById(id).map(usuario ->
                 perfisPermitidos().contains(usuario.getPerfil()) && perfisPermitidos().contains(novoPerfil))
                 .orElse(false);
     }
@@ -50,17 +45,17 @@ public class AcessoUsuario {
     public boolean podeExcluirUsuario(Long id) {
         if (!autenticado() || id == null) return false;
         if (temPerfil(PerfilUsuario.ADMINISTRADOR)) return true;
-        return usuarios.findById(id)
+        return usuarioRepositorio.findById(id)
                 .map(usuario -> perfisPermitidos().contains(usuario.getPerfil())).orElse(false);
     }
 
     public boolean eUsuarioAtual(Long id) {
-        return id != null && usuarios.findByCredencialLogin(loginAtual())
+        return id != null && usuarioRepositorio.findByCredencialLogin(loginAtual())
                 .map(usuario -> id.equals(usuario.getId())).orElse(false);
     }
 
     public Long idUsuarioAtual() {
-        return usuarios.findByCredencialLogin(loginAtual()).map(Usuario::getId)
+        return usuarioRepositorio.findByCredencialLogin(loginAtual()).map(Usuario::getId)
                 .orElseThrow(() -> new AccessDeniedException("Usuário autenticado não encontrado."));
     }
 
@@ -69,7 +64,7 @@ public class AcessoUsuario {
     }
 
     public String documentoAtual() {
-        return usuarios.findByCredencialLogin(loginAtual()).map(Usuario::getDocumento).orElse(null);
+        return usuarioRepositorio.findByCredencialLogin(loginAtual()).map(Usuario::getDocumento).orElse(null);
     }
 
     public boolean podeLerCliente(Long clienteId) {
@@ -78,13 +73,13 @@ public class AcessoUsuario {
         if (!temPerfil(PerfilUsuario.CLIENTE) || clienteId == null) return false;
         String documento = documentoAtual();
         if (documento == null) return false;
-        return clientes.findById(clienteId).map(cliente -> documento.equals(cliente.getCpf())).orElse(false);
+        return clienteRepositorio.findById(clienteId).map(cliente -> documento.equals(cliente.getCpf())).orElse(false);
     }
 
     public boolean podeAcessarVenda(Long vendaId) {
         if (temPerfil(PerfilUsuario.ADMINISTRADOR) || temPerfil(PerfilUsuario.GERENTE)) return true;
         if (vendaId == null) return false;
-        return vendas.findById(vendaId).map(venda -> {
+        return vendaRepositorio.findById(vendaId).map(venda -> {
             if (temPerfil(PerfilUsuario.VENDEDOR)) {
                 return venda.getCriadoPor() != null && eUsuarioAtual(venda.getCriadoPor().getId());
             }

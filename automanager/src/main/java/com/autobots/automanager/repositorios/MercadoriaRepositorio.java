@@ -4,4 +4,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.autobots.automanager.entidades.Mercadoria;
 
 public interface MercadoriaRepositorio extends JpaRepository<Mercadoria, Long> {
+    java.util.List<Mercadoria> findByEmpresa_IdAndEstoqueGreaterThan(Long empresaId, Integer estoque);
 }

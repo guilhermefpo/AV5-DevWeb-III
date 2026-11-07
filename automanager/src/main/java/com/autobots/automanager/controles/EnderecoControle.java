@@ -29,38 +29,38 @@ import com.autobots.automanager.servicos.EnderecoServicos;
 public class EnderecoControle {
 
     @Autowired
-    private EnderecoServicos servicos;
+    private EnderecoServicos enderecoServicos;
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public EnderecoRespostaDTO obterEndereco(@PathVariable("id") long id) {
-        return links(servicos.buscarPorId(id));
+        return links(enderecoServicos.buscarPorId(id));
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<EnderecoRespostaDTO> obterEnderecos() {
-        return servicos.buscarEnderecos().stream().map(this::links).toList();
+        return enderecoServicos.buscarEnderecos().stream().map(this::links).toList();
     }
 
     @PostMapping("/{id}")
     @ResponseStatus(HttpStatus.CREATED)
     public EnderecoRespostaDTO cadastrarEndereco(@Valid @RequestBody EnderecoDTO enderecoDto,
             @PathVariable("id") long id) {
-        return links(servicos.cadastrarEndereco(enderecoDto, id));
+        return links(enderecoServicos.cadastrarEndereco(enderecoDto, id));
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public EnderecoRespostaDTO atualizarEndereco(@PathVariable("id") long id, @RequestBody EnderecoDTO atualizacao) {
-        return links(servicos.atualizarEndereco(id, atualizacao));
+        return links(enderecoServicos.atualizarEndereco(id, atualizacao));
     }
 
     @SuppressWarnings("null")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void excluirEndereco(@PathVariable("id") long id) {
-        servicos.excluirEndereco(id);
+        enderecoServicos.excluirEndereco(id);
     }
 
     private EnderecoRespostaDTO links(EnderecoRespostaDTO endereco) {

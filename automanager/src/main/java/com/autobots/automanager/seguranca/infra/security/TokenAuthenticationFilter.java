@@ -15,18 +15,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
     
-    private final TokenService tokenService;
-    private final Authorization authorization;
-
-    public TokenAuthenticationFilter( TokenService tokenService, Authorization authorization) {
-        this.tokenService = tokenService;
-        this.authorization = authorization;
-    }
+    @Autowired private TokenService tokenService;
+    @Autowired private Authorization authorization;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)

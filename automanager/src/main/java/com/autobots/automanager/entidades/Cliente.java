@@ -13,6 +13,10 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.ManyToOne;
+import javax.persistence.JoinColumn;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 
@@ -48,4 +52,12 @@ public class Cliente {
 
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
 	private List<Telefone> telefones = new ArrayList<>();
+
+	@ManyToOne
+	@JoinColumn(name = "empresa_id")
+	@JsonIgnore
+	private Empresa empresa;
+
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	public Long getEmpresaId() { return empresa == null ? null : empresa.getId(); }
 }

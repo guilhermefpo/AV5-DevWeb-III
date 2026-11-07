@@ -23,19 +23,19 @@ import com.autobots.automanager.repositorios.DocumentoRepositorio;
 public class DocumentoServicos { // Die For You - From Ashes to New
 
         @Autowired
-        private DocumentoRepositorio repositorio;
+        private DocumentoRepositorio documentoRepositorio;
 
         @Autowired
         private ClienteRepositorio clienteRepositorio;
 
         @Autowired
-        private DocumentoAtualizador atualizador;
+        private DocumentoAtualizador documentoAtualizador;
 
         @Autowired
         private ModelMapper modelMapper;
 
         public List<DocumentoRespostaDTO> buscarDocumentos() {
-                List<Documento> documentos = repositorio.findAll();
+                List<Documento> documentos = documentoRepositorio.findAll();
 
                 return documentos.stream()
                                 .map(documento -> modelMapper.map(documento, DocumentoRespostaDTO.class))
@@ -44,7 +44,7 @@ public class DocumentoServicos { // Die For You - From Ashes to New
 
         public DocumentoRespostaDTO buscarPorId(Long id) {
                 @SuppressWarnings("null")
-                Documento documento = repositorio.findById(id)
+                Documento documento = documentoRepositorio.findById(id)
                                 .orElseThrow(() -> new DocumentoNaoEncontradoException(id));
 
                 return modelMapper.map(documento, DocumentoRespostaDTO.class);
@@ -55,15 +55,15 @@ public class DocumentoServicos { // Die For You - From Ashes to New
                         DocumentoDTO novosDados) {
 
                 @SuppressWarnings("null")
-                Documento documento = repositorio.findById(id)
+                Documento documento = documentoRepositorio.findById(id)
                                 .orElseThrow(() -> new DocumentoNaoEncontradoException(id));
 
                 Documento dadosNovos = modelMapper.map(novosDados, Documento.class);
 
-                atualizador.atualizar(documento, dadosNovos);
+                documentoAtualizador.atualizar(documento, dadosNovos);
 
                 @SuppressWarnings("null")
-                Documento documentoSalvo = repositorio.save(documento);
+                Documento documentoSalvo = documentoRepositorio.save(documento);
 
                 return modelMapper.map(
                                 documentoSalvo,
@@ -77,7 +77,7 @@ public class DocumentoServicos { // Die For You - From Ashes to New
                 Cliente cliente = clienteRepositorio.findById(id)
                                 .orElseThrow(() -> new ClienteNaoEncontradoException(id));
 
-                if (repositorio.existsByNumero(novoDocumento.getNumero())) {
+                if (documentoRepositorio.existsByNumero(novoDocumento.getNumero())) {
                         throw new DocumentoJaCadastradoException(
                                         "Já existe um documento cadastrado com esse número.");
                 }
@@ -107,7 +107,7 @@ public class DocumentoServicos { // Die For You - From Ashes to New
 
         public void excluirDocumento(Long id) {
                 @SuppressWarnings("null")
-                Documento documento = repositorio.findById(id)
+                Documento documento = documentoRepositorio.findById(id)
                                 .orElseThrow(() -> new DocumentoNaoEncontradoException(id));
 
                 Cliente cliente = clienteRepositorio.findAll().stream()

@@ -1,6 +1,6 @@
 # AutoManager
 
-> **Projeto AV4 Dev Web.**
+> **Projeto AV5 Dev Web.**
 
 ## Como funciona
 
@@ -629,3 +629,54 @@ Content-Type: application/json
 > **Nota:** Certifique-se de informar corretamente os parâmetros de caminho (`{id}`) e o formato do payload em JSON no software de testes de requisições de sua preferência, como Postman, Insomnia ou Swagger.
 >
 > **Resumo:** nos `POST` de documento, endereço e telefone, o ID informado na URL é o **ID do cliente**. Nos `PUT` e `DELETE` desses recursos, o ID informado na URL é o **ID do próprio recurso**. No `PUT /cliente/{id}`, o ID da URL é o **ID do cliente**, enquanto os IDs presentes no JSON identificam os dados relacionados que serão atualizados.
+
+## APIs empresariais da atividade (microserviços)
+
+O PDF solicita APIs REST protegidas por JWT para que os grupos Toyota e Volkswagen consultem dados das lojas em tempo real. Para atender a esse cenário, o projeto contém cinco aplicações Spring Boot executáveis separadamente. O módulo automanager-core mantém as entidades, repositórios, autenticação e componentes compartilhados; cada microserviço possui seu próprio ponto de entrada, controller, camada de serviços, configuração de execução e porta HTTP.
+
+### Estrutura dos fontes
+
+Cada módulo tem seu próprio src/main/java e src/main/resources. Os controllers recebem os parâmetros HTTP e delegam consultas e montagem de respostas para classes na pasta servicos.
+
+- microservicos/clientes: ClientesApplication, ClientesApi e servicos/ClientesConsultaServico.
+- microservicos/funcionarios: FuncionariosApplication, FuncionariosApi e servicos/FuncionariosConsultaServico.
+- microservicos/catalogo: CatalogoApplication, CatalogoApi e servicos/CatalogoConsultaServico.
+- microservicos/vendas: VendasApplication, VendasApi e servicos/VendasConsultaServico.
+- microservicos/veiculos: VeiculosApplication, VeiculosApi e servicos/VeiculosConsultaServico.
+- automanager: módulo compartilhado e aplicação principal, incluindo entidades, repositórios, DTOs e segurança JWT.
+
+### APIs disponíveis
+
+Todas as APIs exigem o cabeçalho Authorization: Bearer TOKEN e aceitam perfis ADMINISTRADOR, GERENTE ou VENDEDOR. Os caminhos abaixo são relativos ao host e à porta de cada microserviço.
+
+| Microserviço | Porta padrão | Método e caminho | Resposta |
+| :--- | :---: | :--- | :--- |
+| Clientes | 8091 | GET /api/empresas/{empresaId}/clientes | Clientes da loja, incluindo endereço, documentos e telefones |
+| Funcionários | 8092 | GET /api/empresas/{empresaId}/funcionarios | Funcionários da loja, com perfil e dados pessoais; credenciais não são expostas |
+| Catálogo | 8093 | GET /api/empresas/{empresaId}/catalogo | Serviços e mercadorias disponíveis da loja |
+| Vendas | 8094 | GET /api/empresas/{empresaId}/vendas?inicio=AAAA-MM-DD&fim=AAAA-MM-DD | Vendas de peças e ordens de serviço concluídas no período |
+| Veículos | 8095 | GET /api/empresas/{empresaId}/veiculos-atendidos | Veículos com ordem de serviço concluída na loja |
+
+As datas de início e fim da consulta de vendas são inclusivas. Cada registro informa o tipo PECAS ou SERVICO. Itens sem estoque positivo não aparecem no catálogo. Serviços e mercadorias incluem dataCadastro.
+
+O cadastro de clientes continua no aplicativo principal: use POST /cliente?empresaId=ID_DA_EMPRESA para associar o cliente a uma loja. Para aparecer na API de funcionários, vendedores e gerentes devem ser associados à loja com empresaId no cadastro de usuário. O DTO de usuário aceita documentos, endereco e telefones aninhados; esses dados são retornados na consulta de funcionários.
+
+### MySQL e execução
+
+O arquivo docker-compose.yml inicia o MySQL local com banco automanager. Na raiz do projeto, execute:
+
+    docker compose up -d mysql
+    mvn -DskipTests package
+
+O segundo comando compila o módulo compartilhado e gera os cinco JARs executáveis. Para iniciar, abra um terminal por processo. O aplicativo principal usa a porta 8080; os microserviços usam as portas 8091 a 8095.
+
+    java -jar automanager/target/automanager-core-0.0.1-SNAPSHOT-exec.jar
+    java -jar microservicos/clientes/target/api-clientes-0.0.1-SNAPSHOT.jar
+    java -jar microservicos/funcionarios/target/api-funcionarios-0.0.1-SNAPSHOT.jar
+    java -jar microservicos/catalogo/target/api-catalogo-0.0.1-SNAPSHOT.jar
+    java -jar microservicos/vendas/target/api-vendas-0.0.1-SNAPSHOT.jar
+    java -jar microservicos/veiculos/target/api-veiculos-0.0.1-SNAPSHOT.jar
+
+O token das APIs é obtido pelo login do aplicativo principal em POST http://localhost:8080/auth/login. Configure as credenciais e envie o token no cabeçalho Authorization nas chamadas aos microserviços. As configurações de conexão podem ser sobrescritas pelas variáveis DB_URL, DB_USER e DB_PASSWORD; JWT_SECRET define a chave compartilhada de validação dos tokens e SERVER_PORT altera a porta de um serviço.
+
+Os cinco processos são executáveis independentes, mas nesta atividade compartilham o módulo automanager-core e o banco MySQL para consultar os mesmos cadastros do AutoManager.

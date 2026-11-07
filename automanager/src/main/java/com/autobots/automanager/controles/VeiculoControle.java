@@ -8,42 +8,39 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import com.autobots.automanager.dtos.VeiculoDTO;
 import com.autobots.automanager.dtos.VeiculoRespostaDTO;
 import com.autobots.automanager.servicos.VeiculoServicos;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/veiculo")
 public class VeiculoControle {
-    private final VeiculoServicos s;
-
-    public VeiculoControle(VeiculoServicos s) {
-        this.s = s;
-    }
+    @Autowired private VeiculoServicos veiculoServicos;
 
     @GetMapping
     public List<VeiculoRespostaDTO> listar() {
-        return s.listar().stream().map(this::links).toList();
+        return veiculoServicos.listar().stream().map(this::links).toList();
     }
 
     @GetMapping("/{id}")
     public VeiculoRespostaDTO buscar(@PathVariable Long id) {
-        return links(s.buscar(id));
+        return links(veiculoServicos.buscar(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public VeiculoRespostaDTO cadastrar(@Valid @RequestBody VeiculoDTO e, @RequestParam Long usuarioId) {
-        return links(s.salvar(null, e, usuarioId));
+        return links(veiculoServicos.salvar(null, e, usuarioId));
     }
 
     @PutMapping("/{id}")
     public VeiculoRespostaDTO atualizar(@PathVariable Long id, @Valid @RequestBody VeiculoDTO e,
             @RequestParam(required = false) Long usuarioId) {
-        return links(s.salvar(id, e, usuarioId));
+        return links(veiculoServicos.salvar(id, e, usuarioId));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void excluir(@PathVariable Long id) {
-        s.excluir(id);
+        veiculoServicos.excluir(id);
     }
 
     private VeiculoRespostaDTO links(VeiculoRespostaDTO e) {

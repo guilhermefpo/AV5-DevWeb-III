@@ -15,6 +15,7 @@ public class ClienteRespostaDTO extends RepresentationModel<ClienteRespostaDTO> 
     private String nomeSocial;
     private Date dataNascimento;
     private Date dataCadastro;
+    private Long empresaId;
 
     private EnderecoRespostaDTO endereco;
     private List<DocumentoRespostaDTO> documentos;

@@ -4,6 +4,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.autobots.automanager.entidades.Usuario;
@@ -11,16 +12,12 @@ import com.autobots.automanager.repositorios.UsuarioRepositorio;
 
 @Service
 public class Authorization implements UserDetailsService {
-    private final UsuarioRepositorio usuarios;
-
-    public Authorization(UsuarioRepositorio usuarios) {
-        this.usuarios = usuarios;
-    }
+    @Autowired private UsuarioRepositorio usuarioRepositorio;
 
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
-        Usuario usuario = usuarios.findByCredencialLogin(login)
+        Usuario usuario = usuarioRepositorio.findByCredencialLogin(login)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + login));
 
         if (usuario.getCredencial() == null || usuario.getPerfil() == null) {

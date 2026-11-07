@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import com.autobots.automanager.entidades.Veiculo;
 import com.autobots.automanager.repositorios.VeiculoRepositorio;
 import javax.persistence.EntityNotFoundException;
@@ -16,43 +17,37 @@ import com.autobots.automanager.dtos.VeiculoRespostaDTO;
 @Service
 @Transactional
 public class VeiculoServicos {
-    private final VeiculoRepositorio r;
-    private final UsuarioRepositorio usuarios;
-    private final ModelMapper mapper;
-
-    public VeiculoServicos(VeiculoRepositorio r, UsuarioRepositorio usuarios, ModelMapper mapper) {
-        this.r = r;
-        this.usuarios = usuarios;
-        this.mapper = mapper;
-    }
+    @Autowired private VeiculoRepositorio veiculoRepositorio;
+    @Autowired private UsuarioRepositorio usuarioRepositorio;
+    @Autowired private ModelMapper modelMapper;
 
     public List<VeiculoRespostaDTO> listar() {
-        return r.findAll().stream().map(e -> mapper.map(e, VeiculoRespostaDTO.class)).collect(Collectors.toList());
+        return veiculoRepositorio.findAll().stream().map(e -> modelMapper.map(e, VeiculoRespostaDTO.class)).collect(Collectors.toList());
     }
 
     public VeiculoRespostaDTO buscar(Long id) {
-        return mapper.map(r.findById(id).orElseThrow(() -> new EntityNotFoundException("Veículo não encontrado: " + id)), VeiculoRespostaDTO.class);
+        return modelMapper.map(veiculoRepositorio.findById(id).orElseThrow(() -> new EntityNotFoundException("Veículo não encontrado: " + id)), VeiculoRespostaDTO.class);
     }
 
     public VeiculoRespostaDTO salvar(Long id, VeiculoDTO dto, Long usuarioId) {
-        Veiculo e = id == null ? new Veiculo() : r.findById(id)
+        Veiculo e = id == null ? new Veiculo() : veiculoRepositorio.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Veículo não encontrado: " + id));
-        mapper.map(dto, e);
-        if (e.getPlaca() != null && (e.getId() == null ? r.existsByPlaca(e.getPlaca())
-                : r.existsByPlacaAndIdNot(e.getPlaca(), e.getId()))) {
+        modelMapper.map(dto, e);
+        if (e.getPlaca() != null && (e.getId() == null ? veiculoRepositorio.existsByPlaca(e.getPlaca())
+                : veiculoRepositorio.existsByPlacaAndIdNot(e.getPlaca(), e.getId()))) {
             throw new org.springframework.dao.DataIntegrityViolationException("Placa já cadastrada.");
         }
         if (usuarioId != null) {
-            Usuario usuario = usuarios.findById(usuarioId)
+            Usuario usuario = usuarioRepositorio.findById(usuarioId)
                     .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado: " + usuarioId));
             e.setUsuario(usuario);
         } else if (id == null) {
             throw new IllegalArgumentException("Informe usuarioId para associar o veículo.");
         }
-        return mapper.map(r.save(e), VeiculoRespostaDTO.class);
+        return modelMapper.map(veiculoRepositorio.save(e), VeiculoRespostaDTO.class);
     }
 
     public void excluir(Long id) {
-        r.delete(r.findById(id).orElseThrow(() -> new EntityNotFoundException("Veículo não encontrado: " + id)));
+        veiculoRepositorio.delete(veiculoRepositorio.findById(id).orElseThrow(() -> new EntityNotFoundException("Veículo não encontrado: " + id)));
     }
 }

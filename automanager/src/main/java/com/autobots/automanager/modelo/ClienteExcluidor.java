@@ -11,15 +11,15 @@ import com.autobots.automanager.repositorios.ClienteRepositorio;
 public class ClienteExcluidor {
 
     @Autowired
-    private ClienteRepositorio repositorio;
+    private ClienteRepositorio clienteRepositorio;
 
     @SuppressWarnings("null")
     public void excluir(long id) {
 
-        Cliente cliente = repositorio.findById(id)
+        Cliente cliente = clienteRepositorio.findById(id)
                 .orElseThrow(() -> new ClienteNaoEncontradoException(id));
 
-        repositorio.delete(cliente);
+        clienteRepositorio.delete(cliente);
     }
 
 }

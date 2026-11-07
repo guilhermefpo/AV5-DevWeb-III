@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.autobots.automanager.dtos.OrdemServicoDTO;
 import com.autobots.automanager.dtos.OrdemServicoRespostaDTO;
@@ -22,24 +23,15 @@ import com.autobots.automanager.repositorios.VeiculoRepositorio;
 @Service
 @Transactional
 public class OrdemServicoServicos {
-    private final OrdemServicoRepositorio ordens;
-    private final EmpresaRepositorio empresas;
-    private final UsuarioRepositorio usuarios;
-    private final VeiculoRepositorio veiculos;
-    private final ServicoRepositorio servicos;
-
-    public OrdemServicoServicos(OrdemServicoRepositorio ordens, EmpresaRepositorio empresas,
-            UsuarioRepositorio usuarios, VeiculoRepositorio veiculos, ServicoRepositorio servicos) {
-        this.ordens = ordens;
-        this.empresas = empresas;
-        this.usuarios = usuarios;
-        this.veiculos = veiculos;
-        this.servicos = servicos;
-    }
+    @Autowired private OrdemServicoRepositorio ordemServicoRepositorio;
+    @Autowired private EmpresaRepositorio empresaRepositorio;
+    @Autowired private UsuarioRepositorio usuarioRepositorio;
+    @Autowired private VeiculoRepositorio veiculoRepositorio;
+    @Autowired private ServicoRepositorio servicoRepositorio;
 
     @Transactional(readOnly = true)
     public List<OrdemServicoRespostaDTO> listar() {
-        return ordens.findAll().stream().map(this::paraResposta).collect(Collectors.toList());
+        return ordemServicoRepositorio.findAll().stream().map(this::paraResposta).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -49,13 +41,13 @@ public class OrdemServicoServicos {
 
     public OrdemServicoRespostaDTO salvar(Long id, OrdemServicoDTO dto) {
         OrdemServico ordem = id == null ? new OrdemServico() : obterOrdem(id);
-        Empresa empresa = empresas.findById(dto.getEmpresaId())
+        Empresa empresa = empresaRepositorio.findById(dto.getEmpresaId())
                 .orElseThrow(() -> new EntityNotFoundException("Empresa não encontrada: " + dto.getEmpresaId()));
-        Usuario usuario = usuarios.findById(dto.getUsuarioId())
+        Usuario usuario = usuarioRepositorio.findById(dto.getUsuarioId())
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado: " + dto.getUsuarioId()));
-        Veiculo veiculo = veiculos.findById(dto.getVeiculoId())
+        Veiculo veiculo = veiculoRepositorio.findById(dto.getVeiculoId())
                 .orElseThrow(() -> new EntityNotFoundException("Veículo não encontrado: " + dto.getVeiculoId()));
-        Servico servico = servicos.findById(dto.getServicoId())
+        Servico servico = servicoRepositorio.findById(dto.getServicoId())
                 .orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado: " + dto.getServicoId()));
 
         if (veiculo.getUsuario() == null || !veiculo.getUsuario().getId().equals(usuario.getId())) {
@@ -73,15 +65,15 @@ public class OrdemServicoServicos {
         ordem.setObservacao(dto.getObservacao());
         if (dto.getStatus() != null) ordem.setStatus(dto.getStatus());
         else if (id == null) ordem.setStatus(StatusOrdemServico.ABERTA);
-        return paraResposta(ordens.save(ordem));
+        return paraResposta(ordemServicoRepositorio.save(ordem));
     }
 
     public void excluir(Long id) {
-        ordens.delete(obterOrdem(id));
+        ordemServicoRepositorio.delete(obterOrdem(id));
     }
 
     private OrdemServico obterOrdem(Long id) {
-        return ordens.findById(id)
+        return ordemServicoRepositorio.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Ordem de serviço não encontrada: " + id));
     }
 

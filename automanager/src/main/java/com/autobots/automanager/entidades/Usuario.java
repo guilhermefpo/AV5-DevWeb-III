@@ -36,6 +36,15 @@ public class Usuario extends RepresentationModel<Usuario> {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @Valid
     private Credencial credencial;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @Valid
+    private List<Documento> documentos = new ArrayList<>();
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @Valid
+    private Endereco endereco;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @Valid
+    private List<Telefone> telefones = new ArrayList<>();
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Veiculo> veiculos = new ArrayList<>();
 

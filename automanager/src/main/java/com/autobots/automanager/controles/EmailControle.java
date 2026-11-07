@@ -8,41 +8,39 @@ import com.autobots.automanager.dtos.EmailDTO;
 import com.autobots.automanager.dtos.EmailRespostaDTO;
 import com.autobots.automanager.servicos.EmailServicos;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/email")
 public class EmailControle {
-    private final EmailServicos servicos;
-
-    public EmailControle(EmailServicos servicos) {
-        this.servicos = servicos;
-    }
+    @Autowired
+    private EmailServicos emailServicos;
 
     @GetMapping
     public List<EmailRespostaDTO> listar() {
-        return servicos.listar().stream().map(this::links).toList();
+        return emailServicos.listar().stream().map(this::links).toList();
     }
 
     @GetMapping("/{id}")
     public EmailRespostaDTO buscar(@PathVariable Long id) {
-        return links(servicos.buscar(id));
+        return links(emailServicos.buscar(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EmailRespostaDTO cadastrar(@Valid @RequestBody EmailDTO email) {
-        return links(servicos.salvar(null, email));
+        return links(emailServicos.salvar(null, email));
     }
 
     @PutMapping("/{id}")
     public EmailRespostaDTO atualizar(@PathVariable Long id, @Valid @RequestBody EmailDTO email) {
-        return links(servicos.salvar(id, email));
+        return links(emailServicos.salvar(id, email));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void excluir(@PathVariable Long id) {
-        servicos.excluir(id);
+        emailServicos.excluir(id);
     }
 
     private EmailRespostaDTO links(EmailRespostaDTO email) {

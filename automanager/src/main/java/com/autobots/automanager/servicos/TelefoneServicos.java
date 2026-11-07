@@ -23,19 +23,19 @@ import com.autobots.automanager.repositorios.TelefoneRepositorio;
 public class TelefoneServicos {
 
         @Autowired
-        private TelefoneRepositorio repositorio;
+        private TelefoneRepositorio telefoneRepositorio;
 
         @Autowired
         private ClienteRepositorio clienteRepositorio;
 
         @Autowired
-        private TelefoneAtualizador atualizador;
+        private TelefoneAtualizador telefoneAtualizador;
 
         @Autowired
         private ModelMapper modelMapper;
 
         public List<TelefoneRespostaDTO> buscarTelefones() {
-                List<Telefone> telefones = repositorio.findAll();
+                List<Telefone> telefones = telefoneRepositorio.findAll();
 
                 return telefones.stream()
                                 .map(telefone -> modelMapper.map(
@@ -46,7 +46,7 @@ public class TelefoneServicos {
 
         public TelefoneRespostaDTO buscarPorId(Long id) {
 
-                Telefone telefone = repositorio.findById(id)
+                Telefone telefone = telefoneRepositorio.findById(id)
                                 .orElseThrow(() -> new TelefoneNaoEncontradoException(id));
 
                 return modelMapper.map(
@@ -58,12 +58,12 @@ public class TelefoneServicos {
                         Long id,
                         TelefoneDTO novosDados) {
 
-                Telefone telefone = repositorio.findById(id)
+                Telefone telefone = telefoneRepositorio.findById(id)
                                 .orElseThrow(() -> new TelefoneNaoEncontradoException(id));
 
                 if (novosDados.getNumero() != null
                                 && !novosDados.getNumero().equals(telefone.getNumero())
-                                && repositorio.existsByNumeroAndIdNot(
+                                && telefoneRepositorio.existsByNumeroAndIdNot(
                                                 novosDados.getNumero(), id)) {
 
                         throw new TelefoneJaCadastradoException(
@@ -74,9 +74,9 @@ public class TelefoneServicos {
                                 novosDados,
                                 Telefone.class);
 
-                atualizador.atualizar(telefone, dadosNovos);
+                telefoneAtualizador.atualizar(telefone, dadosNovos);
 
-                Telefone telefoneSalvo = repositorio.save(telefone);
+                Telefone telefoneSalvo = telefoneRepositorio.save(telefone);
 
                 return modelMapper.map(
                                 telefoneSalvo,
@@ -90,7 +90,7 @@ public class TelefoneServicos {
                 Cliente cliente = clienteRepositorio.findById(id)
                                 .orElseThrow(() -> new ClienteNaoEncontradoException(id));
 
-                if (repositorio.existsByNumero(novoTelefone.getNumero())) {
+                if (telefoneRepositorio.existsByNumero(novoTelefone.getNumero())) {
                         throw new TelefoneJaCadastradoException(
                                         "Já existe um telefone cadastrado com esse número.");
                 }

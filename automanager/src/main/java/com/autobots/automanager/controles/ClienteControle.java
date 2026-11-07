@@ -32,7 +32,7 @@ import com.autobots.automanager.seguranca.AcessoUsuario;
 public class ClienteControle {
 
 	@Autowired
-	private ClienteServicos servicos;
+	private ClienteServicos clienteServicos;
 	@Autowired
 	private AcessoUsuario acessoUsuario;
 
@@ -40,7 +40,7 @@ public class ClienteControle {
 	@PreAuthorize("@acessoUsuario.podeLerCliente(#id)")
 	@ResponseStatus(HttpStatus.OK)
 	public ClienteRespostaDTO obterCliente(@PathVariable("id") @P("id") long id) {
-		return links(servicos.buscarPorId(id));
+		return links(clienteServicos.buscarPorId(id));
 	}
 
 	@GetMapping
@@ -48,21 +48,22 @@ public class ClienteControle {
 	@ResponseStatus(HttpStatus.OK)
 	public List<ClienteRespostaDTO> obterClientes() {
 		List<ClienteRespostaDTO> clientes = acessoUsuario.ehCliente()
-				? servicos.buscarClientesPorCpf(acessoUsuario.documentoAtual())
-				: servicos.buscarClientes();
+				? clienteServicos.buscarClientesPorCpf(acessoUsuario.documentoAtual())
+				: clienteServicos.buscarClientes();
 		return clientes.stream().map(this::links).toList();
 	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public ClienteRespostaDTO cadastrarCliente(@Valid @RequestBody ClienteDTO clienteDto) {
-		return links(servicos.cadastrarCliente(clienteDto));
+	public ClienteRespostaDTO cadastrarCliente(@Valid @RequestBody ClienteDTO clienteDto,
+			@org.springframework.web.bind.annotation.RequestParam Long empresaId) {
+		return links(clienteServicos.cadastrarCliente(clienteDto, empresaId));
 	}
 
 	@PutMapping("/{id}")
 	@ResponseStatus(HttpStatus.OK)
 	public ClienteRespostaDTO atualizarCliente(@PathVariable("id") long id, @RequestBody ClienteDTO atualizacao) {
-		return links(servicos.atualizarCliente(id, atualizacao));
+		return links(clienteServicos.atualizarCliente(id, atualizacao));
 	}
 
 	private ClienteRespostaDTO links(ClienteRespostaDTO cliente) {
@@ -75,7 +76,7 @@ public class ClienteControle {
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void excluirCliente(@PathVariable("id") long id) {
-		servicos.excluirCliente(id);
+		clienteServicos.excluirCliente(id);
 	}
 
 }

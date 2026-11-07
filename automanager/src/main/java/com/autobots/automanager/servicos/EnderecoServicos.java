@@ -21,19 +21,19 @@ import com.autobots.automanager.repositorios.EnderecoRepositorio;
 public class EnderecoServicos {
 
     @Autowired
-    private EnderecoRepositorio repositorio;
+    private EnderecoRepositorio enderecoRepositorio;
 
     @Autowired
     private ClienteRepositorio clienteRepositorio;
 
     @Autowired
-    private EnderecoAtualizador atualizador;
+    private EnderecoAtualizador enderecoAtualizador;
 
     @Autowired
     private ModelMapper modelMapper;
 
     public List<EnderecoRespostaDTO> buscarEnderecos() {
-        List<Endereco> enderecos = repositorio.findAll();
+        List<Endereco> enderecos = enderecoRepositorio.findAll();
 
         return enderecos.stream()
                 .map(endereco -> modelMapper.map(
@@ -45,7 +45,7 @@ public class EnderecoServicos {
     public EnderecoRespostaDTO buscarPorId(Long id) {
 
         @SuppressWarnings("null")
-        Endereco endereco = repositorio.findById(id)
+        Endereco endereco = enderecoRepositorio.findById(id)
                 .orElseThrow(() -> new EnderecoNaoEncontradoException(id));
 
         return modelMapper.map(
@@ -58,17 +58,17 @@ public class EnderecoServicos {
             EnderecoDTO novosDados) {
 
         @SuppressWarnings("null")
-        Endereco endereco = repositorio.findById(id)
+        Endereco endereco = enderecoRepositorio.findById(id)
                 .orElseThrow(() -> new EnderecoNaoEncontradoException(id));
 
         Endereco dadosNovos = modelMapper.map(
                 novosDados,
                 Endereco.class);
 
-        atualizador.atualizar(endereco, dadosNovos);
+        enderecoAtualizador.atualizar(endereco, dadosNovos);
 
         @SuppressWarnings("null")
-        Endereco enderecoSalvo = repositorio.save(endereco);
+        Endereco enderecoSalvo = enderecoRepositorio.save(endereco);
 
         return modelMapper.map(
                 enderecoSalvo,

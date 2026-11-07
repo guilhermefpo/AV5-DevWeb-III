@@ -9,6 +9,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -26,6 +27,8 @@ public class Mercadoria extends RepresentationModel<Mercadoria> {
     @NotNull(message = "Preço é obrigatório")
     @PositiveOrZero(message = "Preço não pode ser negativo")
     private BigDecimal preco;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime dataCadastro;
     @ManyToOne
     @JoinColumn(name = "empresa_id")
     @JsonIgnore
@@ -35,4 +38,7 @@ public class Mercadoria extends RepresentationModel<Mercadoria> {
     public Long getEmpresaId() {
         return empresa == null ? null : empresa.getId();
     }
+
+    @PrePersist
+    void definirDataCadastro() { if (dataCadastro == null) dataCadastro = LocalDateTime.now(); }
 }

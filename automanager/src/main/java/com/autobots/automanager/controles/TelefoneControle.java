@@ -29,25 +29,25 @@ import com.autobots.automanager.servicos.TelefoneServicos;
 public class TelefoneControle {
 
     @Autowired
-    private TelefoneServicos servicos;
+    private TelefoneServicos telefoneServicos;
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public TelefoneRespostaDTO obterTelefone(@PathVariable("id") long id) {
-        return links(servicos.buscarPorId(id));
+        return links(telefoneServicos.buscarPorId(id));
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<TelefoneRespostaDTO> obterTelefones() {
-        return servicos.buscarTelefones().stream().map(this::links).toList();
+        return telefoneServicos.buscarTelefones().stream().map(this::links).toList();
     }
 
     @PostMapping("/{id}")
     @ResponseStatus(HttpStatus.CREATED)
     public TelefoneRespostaDTO cadastrarTelefone(@Valid @RequestBody TelefoneDTO telefoneDto,
             @PathVariable("id") long id) {
-        return links(servicos.cadastrarTelefone(telefoneDto, id));
+        return links(telefoneServicos.cadastrarTelefone(telefoneDto, id));
     }
 
     @PutMapping("/{id}")
@@ -56,13 +56,13 @@ public class TelefoneControle {
             @PathVariable("id") long id,
             @RequestBody TelefoneDTO atualizacao) {
 
-        return links(servicos.atualizarTelefone(id, atualizacao));
+        return links(telefoneServicos.atualizarTelefone(id, atualizacao));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void excluirTelefone(@PathVariable("id") long id) {
-        servicos.excluirTelefone(id);
+        telefoneServicos.excluirTelefone(id);
     }
 
     private TelefoneRespostaDTO links(TelefoneRespostaDTO telefone) {
